@@ -30,7 +30,7 @@ def make_env(scenario_name, benchmark=False, discrete_action=False):
         .n                  :   Returns the number of Agents
     '''
     import sys
-    sys.path.append(r"C:\\Users\\Yilun\\Desktop\\Robot\\multi-agent\\")  #added this for evaluate
+    sys.path.append(r"/iliad/u/yilunhao/multiagent/")  #added this for evaluate
     from torchenvs.multiagent.environment import MultiAgentEnv
     import torchenvs.multiagent.scenarios as scenarios
 
