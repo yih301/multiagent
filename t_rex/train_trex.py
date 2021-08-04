@@ -14,6 +14,7 @@ import pdb
 import time
 import imageio
 import sys
+#sys.path.append(r"C:\\Users\\Yilun\\Desktop\\Robot\\multi-agent\\maddpg-pytorch")  #added this for evaluate
 sys.path.append(r"/iliad/u/yilunhao/multiagent/maddpg-pytorch")  #added this for evaluate
 from torch.autograd import Variable
 from utils.make_env import make_env
@@ -38,6 +39,7 @@ parser.add_argument('--train_traj_nums', nargs='+', type=int, help='the number o
 parser.add_argument('--num_epochs', type=int, default=100, help='the path to the testing demonstrations files')
 parser.add_argument('--mode', default='state_only', help='the mode of the reward function')
 parser.add_argument('--dataset_mode', default='partial', help='the dataset mode')
+parser.add_argument('--network_mode', default='single', help='the network mode')
 args = parser.parse_args()
 
 if torch.cuda.is_available():
@@ -66,14 +68,24 @@ print(len(train_dataset))
 train_loader = data_utils.DataLoader(train_dataset, collate_fn=dataset.rank_collate_func, batch_size=args.batch_size, shuffle=True, num_workers=4)
 test_loader = data_utils.DataLoader(test_dataset, collate_fn=dataset.rank_collate_func, batch_size=1, shuffle=False, num_workers=4)
 
-if args.mode == 'state_only':
-    reward_net = models.RewardNet(num_inputs).float()
-elif args.mode == 'state_pair':
-    reward_net = models.RewardNet(num_inputs*2).float()
-elif args.mode == 'state_action':
-    reward_net = models.RewardNet(num_inputs+num_actions).float()
-else:
-    raise NotImplementedError
+if args.network_mode == 'single':
+    if args.mode == 'state_only':
+        reward_net = models.RewardNet(num_inputs).float()
+    elif args.mode == 'state_pair':
+        reward_net = models.RewardNet(num_inputs*2).float()
+    elif args.mode == 'state_action':
+        reward_net = models.RewardNet(num_inputs+num_actions).float()
+    else:
+        raise NotImplementedError
+else: 
+    if args.mode == 'state_only':
+        reward_net = models.ShareRewardNet(num_inputs).float()
+    elif args.mode == 'state_pair':
+        reward_net = models.ShareRewardNet(num_inputs*2).float()
+    elif args.mode == 'state_action':
+        reward_net = models.ShareRewardNet(num_inputs+num_actions).float()
+    else:
+        raise NotImplementedError
 if use_gpu:
     reward_net = reward_net.cuda()
 optimizer = optim.Adam(reward_net.parameters(), lr=0.001, weight_decay=0.0005)
