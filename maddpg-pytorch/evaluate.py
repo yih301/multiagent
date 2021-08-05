@@ -33,15 +33,22 @@ def run(config):
     savefile1 = {}
     savefile2 = {}
     savefile3 = {}
+    allfile = {}
     fileobs = [[],[],[]]
     filerewards = [[],[],[]]
     filestate=[[],[],[]]
+    fileallo = []
+    fileallr = []
+    filealls = []
     for ep_i in range(config.n_episodes):
         print("Episode %i of %i" % (ep_i + 1, config.n_episodes))
         obs = env.reset()
         saveobs = [[],[],[]]
         saverewards = [[],[],[]]
         savestate=[[],[],[]]
+        saveallo = []
+        saveallr = []
+        savealls = []
         if config.save_gifs:
             frames = []
             frames.append(env.render('rgb_array')[0])
@@ -60,9 +67,11 @@ def run(config):
             saveobs[0].append(np.array(obs[0]))
             saveobs[1].append(np.array(obs[1]))
             saveobs[2].append(np.array(obs[2]))
+            saveallo.append(np.array(obs))
             saverewards[0].append(np.array(rewards[0]))
             saverewards[1].append(np.array(rewards[1]))
             saverewards[2].append(np.array(rewards[2]))
+            saveallr.append(np.array(np.array(rewards)))
             statearray1 = [env.world.agents[0].state.p_pos[0], env.world.agents[0].state.p_pos[1], 
                             env.world.agents[0].state.p_vel[0], env.world.agents[0].state.p_vel[1],
                             env.world.agents[0].state.c[0], env.world.agents[0].state.c[1]]
@@ -75,6 +84,7 @@ def run(config):
             savestate[0].append(np.array(statearray1))
             savestate[1].append(np.array(statearray2))
             savestate[2].append(np.array(statearray3))
+            savealls.append(np.array([np.array(statearray1),np.array(statearray2),np.array(statearray3)]))
             if config.save_gifs:
                 frames.append(env.render('rgb_array')[0])
             calc_end = time.time()
@@ -85,12 +95,15 @@ def run(config):
         fileobs[0].append(saveobs[0])
         fileobs[1].append(saveobs[1])
         fileobs[2].append(saveobs[2])
+        fileallo.append(saveallo)
         filerewards[0].append(saverewards[0])
         filerewards[1].append(saverewards[1])
         filerewards[2].append(saverewards[2])
+        fileallr.append(saveallr)
         filestate[0].append(savestate[0])
         filestate[1].append(savestate[1])
         filestate[2].append(savestate[2])
+        filealls.append(savealls)
         if config.save_gifs:
             gif_num = 0
             while (gif_path / ('%i_%i.gif' % (gif_num, ep_i))).exists():
@@ -106,7 +119,9 @@ def run(config):
     savefile3['obs'] =fileobs[2]
     savefile3['reward'] = filerewards[2]
     savefile3['traj'] = filestate[2]
-    pdb.set_trace()
+    allfile['obs'] =fileallo[0]
+    allfile['reward'] = fileallr[0]
+    allfile['traj'] = filealls[0]
     file_path = (Path('./models') / config.env_id / config.model_name /
                 ('run%i' % config.run_num))
     with open(os.path.join(file_path,'1.pkl'), "wb") as f:
@@ -115,6 +130,8 @@ def run(config):
         pickle.dump(savefile1, f)
     with open(os.path.join(file_path,'3.pkl'), "wb") as f:
         pickle.dump(savefile1, f)
+    with open(os.path.join(file_path,'all.pkl'), "wb") as f:
+        pickle.dump(allfile, f)
 
     env.close()
 

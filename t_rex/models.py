@@ -32,7 +32,7 @@ class RewardNet(nn.Module):
         return reward.item()   
 
 class RewardNets(nn.Module):
-    def __init__(self, input_dim, net_num, hidden_dim=256, num_layers=2):
+    def __init__(self, input_dim, net_num, hidden_dim=256, num_layers=4):
         super(RewardNets, self).__init__()
         self.reward_nets = nn.ModuleList([RewardNet(input_dim, hidden_dim, num_layers) for i in range(net_num)])
         self.net_num = net_num
