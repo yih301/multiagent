@@ -102,8 +102,8 @@ for epoch in range(args.num_epochs):
         bs2 = len(traj2)
         assert bs1 == bs2
         
-        pred_rew1 = (torch.cat([torch.sum(reward_net(item), dim=0, keepdim=True) for item in traj1], dim=0)).reshape(64,1)
-        pred_rew2 = (torch.cat([torch.sum(reward_net(item), dim=0, keepdim=True) for item in traj2], dim=0)).reshape(64,1)
+        pred_rew1 = torch.cat([torch.sum(reward_net(item), dim=0, keepdim=True) for item in traj1], dim=0))
+        pred_rew2 = torch.cat([torch.sum(reward_net(item), dim=0, keepdim=True) for item in traj2], dim=0))
         pred_rank = torch.lt(pred_rew1, pred_rew2)
         gt_rank = torch.lt(rew1, rew2)
         acc_counter += torch.sum(pred_rank==gt_rank)
