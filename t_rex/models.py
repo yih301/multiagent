@@ -76,6 +76,6 @@ class ShareRewardNet(nn.Module):
 
     def forward(self, x_list):
         if type(x_list) == list and len(x_list) == self.net_num:
-            return torch.FloatTensor([self.reward_nets[i](x_list[i]) for i in range(self.net_num)],requires_grad=True)
+            return torch.FloatTensor([self.reward_nets[i](x_list[i]) for i in range(self.net_num)])
         else:
-            return torch.FloatTensor([self.reward_nets[i](x_list) for i in range(self.net_num)],,requires_grad=True)
+            return torch.FloatTensor([self.reward_nets[i](x_list) for i in range(self.net_num)])
