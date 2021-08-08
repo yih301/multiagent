@@ -94,7 +94,7 @@ best_acc = 0
 for epoch in range(args.num_epochs):
     counter = 0
     acc_counter = 0
-    for _, data in enumerate(test_loader):
+    '''for _, data in enumerate(test_loader):
         traj1, rew1, traj2, rew2 = data
         if use_gpu:
             traj1, rew1, traj2, rew2 = [item.cuda() for item in traj1], rew1.cuda(), [item.cuda() for item in traj2], rew2.cuda()
@@ -111,7 +111,7 @@ for epoch in range(args.num_epochs):
     print('Epoch {}, Acc {}'.format(epoch, acc_counter/counter))
     if acc_counter/counter > best_acc:
         best_acc = acc_counter/counter
-        torch.save(reward_net.state_dict(), 'checkpoints/{}_reward_net_{}_{}_{}_{}.pth'.format(args.env_name, args.mode, args.dataset_mode, '_'.join([str(traj_num) for traj_num in args.train_traj_nums]) if args.train_traj_nums is not None else '', args.seed))
+        torch.save(reward_net.state_dict(), 'checkpoints/{}_reward_net_{}_{}_{}_{}.pth'.format(args.env_name, args.mode, args.dataset_mode, '_'.join([str(traj_num) for traj_num in args.train_traj_nums]) if args.train_traj_nums is not None else '', args.seed))'''
 
     for iter_, data in enumerate(train_loader):
         traj1, rew1, traj2, rew2 = data
