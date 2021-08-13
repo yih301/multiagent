@@ -14,8 +14,8 @@ import pdb
 import time
 import imageio
 import sys
-sys.path.append(r"C:\\Users\\Yilun\\Desktop\\Robot\\multi-agent\\maddpg-pytorch")  #added this for evaluate
-#sys.path.append(r"/iliad/u/yilunhao/multiagent/maddpg-pytorch")  #added this for evaluate
+#sys.path.append(r"C:\\Users\\Yilun\\Desktop\\Robot\\multi-agent\\maddpg-pytorch")  #added this for evaluate
+sys.path.append(r"/iliad/u/yilunhao/multiagent/maddpg-pytorch")  #added this for evaluate
 from torch.autograd import Variable
 from utils.make_env import make_env
 from algorithms.maddpg import MADDPG
