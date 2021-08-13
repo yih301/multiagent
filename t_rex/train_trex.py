@@ -122,7 +122,7 @@ for epoch in range(args.num_epochs):
         assert bs1 == bs2
         
         optimizer.zero_grad()
-        pdb.set_trace()
+        #pdb.set_trace()
         pred_rew1 = (torch.cat([torch.sum(reward_net(item), dim=0, keepdim=True) for item in traj1], dim=0)).reshape(64,1)
         pred_rew2 = (torch.cat([torch.sum(reward_net(item), dim=0, keepdim=True) for item in traj2], dim=0)).reshape(64,1)
         reward_sum = torch.cat([pred_rew1, pred_rew2], dim=1)
