@@ -57,7 +57,7 @@ class RankingLimitDataset(data_utils.Dataset):
         for i in range(len(trajs)):
             if traj_len > 0:
                 for j in range(max(1, len(rewards[i])-traj_len*self.jump_steps+1)):
-                    all_pairs.append([self.traj_index,j,rewards[i][j:j+traj_len*self.jump_steps:self.jump_steps]])  #changed this
+                    all_pairs.append([self.traj_index,j,rewards[i][j:j+traj_len*self.jump_steps:self.jump_steps][0]])  #changed this
             else:
                 all_pairs.append([self.traj_index,0,rewards[i][::self.jump_steps]])  #changed this
             self.traj_index += 1
