@@ -73,6 +73,7 @@ class ShareRewardNet(nn.Module):
             nets.append(nn.Sequential(*layer_list))
         self.reward_nets = nn.ModuleList(nets)
         self.net_num = net_num
+        pdb.set_trace()
 
     def forward(self, x_list):
         if type(x_list) == list and len(x_list) == self.net_num:
