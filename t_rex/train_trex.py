@@ -65,7 +65,6 @@ elif args.dataset_mode == 'traj':
 else:
     raise NotImplementedError
 print(len(train_dataset))
-pdb.set_trace()
 train_loader = data_utils.DataLoader(train_dataset, collate_fn=dataset.rank_collate_func, batch_size=args.batch_size, shuffle=True, num_workers=4)
 test_loader = data_utils.DataLoader(test_dataset, collate_fn=dataset.rank_collate_func, batch_size=1, shuffle=False, num_workers=4)
 
