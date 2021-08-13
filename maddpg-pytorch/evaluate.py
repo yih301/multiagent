@@ -119,9 +119,9 @@ def run(config):
     savefile3['obs'] =fileobs[2]
     savefile3['reward'] = filerewards[2]
     savefile3['traj'] = filestate[2]
-    allfile['obs'] =fileallo[0]
-    allfile['reward'] = fileallr[0]
-    allfile['traj'] = filealls[0]
+    allfile['obs'] =fileallo
+    allfile['reward'] = fileallr
+    allfile['traj'] = filealls
     file_path = (Path('./models') / config.env_id / config.model_name /
                 ('run%i' % config.run_num))
     with open(os.path.join(file_path,'1.pkl'), "wb") as f:
