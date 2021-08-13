@@ -58,7 +58,6 @@ class RankingLimitDataset(data_utils.Dataset):
             if traj_len > 0:
                 for j in range(max(1, len(rewards[i])-traj_len*self.jump_steps+1)):
                     all_pairs.append([self.traj_index,j,rewards[i][j:j+traj_len*self.jump_steps:self.jump_steps]])  #changed this
-                    pdb.set_trace()
             else:
                 all_pairs.append([self.traj_index,0,rewards[i][::self.jump_steps]])  #changed this
             self.traj_index += 1
