@@ -123,8 +123,8 @@ for epoch in range(args.num_epochs):
         
         optimizer.zero_grad()
         pdb.set_trace()
-        pred_rew1 = (torch.cat([torch.sum(reward_net(item), dim=0, keepdim=True) for item in traj1], dim=0)).reshape(64,1)
-        pred_rew2 = (torch.cat([torch.sum(reward_net(item), dim=0, keepdim=True) for item in traj2], dim=0)).reshape(64,1)
+        pred_rew1 = (torch.cat([reward_net(item.reshape((3,6))) for item in traj1], dim=0))
+        pred_rew2 = (torch.cat([reward_net(item.reshape((3,6))) for item in traj2], dim=0))
         reward_sum = torch.cat([pred_rew1, pred_rew2], dim=1)
         rank_label = (torch.lt(rew1, rew2)).long()
         loss = nn.CrossEntropyLoss()(reward_sum, rank_label)
