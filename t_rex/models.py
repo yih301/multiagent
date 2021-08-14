@@ -78,10 +78,11 @@ class ShareRewardNet(nn.Module):
 
     def forward(self, x_list):
         if type(x_list) == list and len(x_list) == self.net_num:
+            print("yes!!!!!!!!!!")
             #return torch.FloatTensor([self.reward_nets[i](x_list[i]) for i in range(self.net_num)])
-            pdb.set_trace()
             return [self.reward_nets[i](x_list[i]) for i in range(self.net_num)]
 
         else:
+            print("no!!!!!!!!!!")
             #return torch.FloatTensor([self.reward_nets[i](x_list) for i in range(self.net_num)])
             return [self.reward_nets[i](x_list) for i in range(self.net_num)]
