@@ -53,7 +53,7 @@ class RewardNets(nn.Module):
         return reward
 
 class ShareRewardNet(nn.Module):
-    def __init__(self, input_dim, net_num=3, hidden_dim=256, num_sharelayers=2, num_layers=2):
+    def __init__(self, input_dim, net_num=3, hidden_dim=100, num_sharelayers=2, num_layers=2):
         super(ShareRewardNet, self).__init__()
         self.input_dim = input_dim
         last_dim = self.input_dim
@@ -76,8 +76,36 @@ class ShareRewardNet(nn.Module):
         self.net_num = net_num
 
     def forward(self, x_list):
-        if len(x_list) == self.net_num:
-            return [self.reward_nets[i](x_list[i]) for i in range(self.net_num)]
+        if len(x_list[0]) == self.net_num:
+            return [self.reward_nets[i](x_list[:,i]) for i in range(self.net_num)]
+
+        else:
+            return [self.reward_nets[i](x_list) for i in range(self.net_num)]
+
+class singleRewardNet(nn.Module):
+    def __init__(self, input_dim, net_num=3, hidden_dim=100, num_layers=4):
+        super(singleRewardNet, self).__init__()
+        self.input_dim = input_dim
+        last_dim = self.input_dim
+        nets = []
+        for i in range(net_num):
+            layer_list = []
+            layer_list.append(nn.Linear(input_dim, hidden_dim))
+            layer_list.append(activation())
+            layer_list.append(nn.Linear(hidden_dim, hidden_dim))
+            layer_list.append(activation())
+            layer_list.append(nn.Linear(hidden_dim, hidden_dim))
+            layer_list.append(activation())
+            layer_list.append(nn.Linear(hidden_dim, hidden_dim))
+            layer_list.append(activation())
+            layer_list.append(nn.Linear(hidden_dim, 1))
+            nets.append(nn.Sequential(*layer_list))
+        self.reward_nets = nn.ModuleList(nets)
+        self.net_num = net_num
+
+    def forward(self, x_list):
+        if len(x_list[0]) == self.net_num:
+            return [self.reward_nets[i](x_list[:,i]) for i in range(self.net_num)]
 
         else:
             return [self.reward_nets[i](x_list) for i in range(self.net_num)]

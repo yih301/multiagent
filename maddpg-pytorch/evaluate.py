@@ -64,26 +64,35 @@ def run(config):
             # convert actions to numpy arrays
             actions = [ac.data.numpy().flatten() for ac in torch_actions]
             obs, rewards, dones, infos = env.step(actions)
-            saveobs[0].append(np.array(obs[0]))
-            saveobs[1].append(np.array(obs[1]))
-            saveobs[2].append(np.array(obs[2]))
+            #saveobs[0].append(np.array(obs[0]))
+            #saveobs[1].append(np.array(obs[1]))
+            #saveobs[2].append(np.array(obs[2]))
             saveallo.append(np.array(obs))
-            saverewards[0].append(np.array(rewards[0]))
-            saverewards[1].append(np.array(rewards[1]))
-            saverewards[2].append(np.array(rewards[2]))
+            #saverewards[0].append(np.array(rewards[0]))
+            #saverewards[1].append(np.array(rewards[1]))
+            #saverewards[2].append(np.array(rewards[2]))
             saveallr.append(np.array(np.array(rewards)))
-            statearray1 = [env.world.agents[0].state.p_pos[0], env.world.agents[0].state.p_pos[1], 
-                            env.world.agents[0].state.p_vel[0], env.world.agents[0].state.p_vel[1],
-                            env.world.agents[0].state.c[0], env.world.agents[0].state.c[1]]
-            statearray2 = [env.world.agents[1].state.p_pos[0], env.world.agents[1].state.p_pos[1], 
-                            env.world.agents[1].state.p_vel[0], env.world.agents[1].state.p_vel[1],
-                            env.world.agents[1].state.c[0], env.world.agents[1].state.c[1]]
-            statearray3 = [env.world.agents[2].state.p_pos[0], env.world.agents[2].state.p_pos[1], 
-                            env.world.agents[2].state.p_vel[0], env.world.agents[2].state.p_vel[1],
-                            env.world.agents[2].state.c[0], env.world.agents[2].state.c[1]]
-            savestate[0].append(np.array(statearray1))
-            savestate[1].append(np.array(statearray2))
-            savestate[2].append(np.array(statearray3))
+            #statearray1 = [env.world.agents[0].state.p_pos[0], env.world.agents[0].state.p_pos[1], 
+            #                env.world.agents[0].state.p_vel[0], env.world.agents[0].state.p_vel[1],
+            #                env.world.agents[0].state.c[0], env.world.agents[0].state.c[1]]
+            #statearray2 = [env.world.agents[1].state.p_pos[0], env.world.agents[1].state.p_pos[1], 
+            #                env.world.agents[1].state.p_vel[0], env.world.agents[1].state.p_vel[1],
+            #                env.world.agents[1].state.c[0], env.world.agents[1].state.c[1]]
+            #statearray3 = [env.world.agents[2].state.p_pos[0], env.world.agents[2].state.p_pos[1], 
+            #                env.world.agents[2].state.p_vel[0], env.world.agents[2].state.p_vel[1],
+            #                env.world.agents[2].state.c[0], env.world.agents[2].state.c[1]]
+            statearray1 = [env.world.agents[0].state.p_pos[0], env.world.agents[0].state.p_pos[1],
+                           env.world.agents[0].goal_a.state.p_pos[0], env.world.agents[0].goal_a.state.p_pos[1],
+                           env.world.agents[0].goal_a.size]
+            statearray2 = [env.world.agents[1].state.p_pos[0], env.world.agents[1].state.p_pos[1],
+                           env.world.agents[1].goal_a.state.p_pos[0], env.world.agents[1].goal_a.state.p_pos[1],
+                           env.world.agents[1].goal_a.size]
+            statearray3 = [env.world.agents[2].state.p_pos[0], env.world.agents[2].state.p_pos[1],
+                           env.world.agents[2].goal_a.state.p_pos[0], env.world.agents[2].goal_a.state.p_pos[1],
+                           env.world.agents[2].goal_a.size]
+            #savestate[0].append(np.array(statearray1))
+            #savestate[1].append(np.array(statearray2))
+            #savestate[2].append(np.array(statearray3))
             savealls.append(np.array([np.array(statearray1),np.array(statearray2),np.array(statearray3)]))
             if config.save_gifs:
                 frames.append(env.render('rgb_array')[0])
@@ -92,17 +101,17 @@ def run(config):
             if elapsed < ifi:
                 time.sleep(ifi - elapsed)
             env.render('human')
-        fileobs[0].append(saveobs[0])
-        fileobs[1].append(saveobs[1])
-        fileobs[2].append(saveobs[2])
+        #fileobs[0].append(saveobs[0])
+        #fileobs[1].append(saveobs[1])
+        #fileobs[2].append(saveobs[2])
         fileallo.append(saveallo)
-        filerewards[0].append(saverewards[0])
-        filerewards[1].append(saverewards[1])
-        filerewards[2].append(saverewards[2])
+        #filerewards[0].append(saverewards[0])
+        #filerewards[1].append(saverewards[1])
+        #filerewards[2].append(saverewards[2])
         fileallr.append(saveallr)
-        filestate[0].append(savestate[0])
-        filestate[1].append(savestate[1])
-        filestate[2].append(savestate[2])
+        #filestate[0].append(savestate[0])
+        #filestate[1].append(savestate[1])
+        #filestate[2].append(savestate[2])
         filealls.append(savealls)
         if config.save_gifs:
             gif_num = 0
@@ -110,7 +119,7 @@ def run(config):
                 gif_num += 1
             imageio.mimsave(str(gif_path / ('%i_%i.gif' % (gif_num, ep_i))),
                             frames, duration=ifi)
-    savefile1['obs'] =fileobs[0]
+    '''savefile1['obs'] =fileobs[0]
     savefile1['reward'] = filerewards[0]
     savefile1['traj'] = filestate[0]
     savefile2['obs'] =fileobs[1]
@@ -118,18 +127,18 @@ def run(config):
     savefile2['traj'] = filestate[1]
     savefile3['obs'] =fileobs[2]
     savefile3['reward'] = filerewards[2]
-    savefile3['traj'] = filestate[2]
+    savefile3['traj'] = filestate[2]'''
     allfile['obs'] =fileallo
     allfile['reward'] = fileallr
     allfile['traj'] = filealls
     file_path = (Path('./models') / config.env_id / config.model_name /
                 ('run%i' % config.run_num))
-    with open(os.path.join(file_path,'1.pkl'), "wb") as f:
+    '''with open(os.path.join(file_path,'1.pkl'), "wb") as f:
         pickle.dump(savefile1, f)
     with open(os.path.join(file_path,'2.pkl'), "wb") as f:
         pickle.dump(savefile1, f)
     with open(os.path.join(file_path,'3.pkl'), "wb") as f:
-        pickle.dump(savefile1, f)
+        pickle.dump(savefile1, f)'''
     with open(os.path.join(file_path,'all.pkl'), "wb") as f:
         pickle.dump(allfile, f)
 

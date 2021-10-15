@@ -20,7 +20,7 @@ def rank_collate_func(items):
     return item_list
 
 class RankingLimitDataset(data_utils.Dataset):
-    def __init__(self, traj_files, pair_nums, state_dim, action_dim, mode='state_only', traj_len=1, seed=1234):
+    def __init__(self, traj_files, pair_nums, state_dim, action_dim, mode='state_only', traj_len=25, seed=1234, agent_num=3):
         self.pairs1 = []
         self.pairs2 = []
         self.trajs = []
@@ -45,6 +45,7 @@ class RankingLimitDataset(data_utils.Dataset):
         self.mode = mode
         self.state_dim = state_dim
         self.action_dim = action_dim
+        self.agent_num = agent_num
         ## different for different envs
         self.action_limit = [-1., 1.]
         np.random.seed(seed)
@@ -57,9 +58,11 @@ class RankingLimitDataset(data_utils.Dataset):
         for i in range(len(trajs)):
             if traj_len > 0:
                 for j in range(max(1, len(rewards[i])-traj_len*self.jump_steps+1)):
-                    all_pairs.append([self.traj_index,j,rewards[i][j:j+traj_len*self.jump_steps:self.jump_steps][0]])  #changed this
+                    all_pairs.append([self.traj_index,j,np.sum(rewards[i][j:j+traj_len*self.jump_steps:self.jump_steps],axis=0)])
+                    #all_pairs.append([self.traj_index,j,rewards[i][j:j+traj_len*self.jump_steps:self.jump_steps][0]])  #changed this
             else:
-                all_pairs.append([self.traj_index,0,rewards[i][::self.jump_steps]])  #changed this
+                all_pairs.append([self.traj_index,0,np.sum(rewards[i][::self.jump_steps],axis=0)])
+                #all_pairs.append([self.traj_index,0,rewards[i][::self.jump_steps]])  #changed this
             self.traj_index += 1
         return all_pairs
 
@@ -72,9 +75,9 @@ class RankingLimitDataset(data_utils.Dataset):
         ret_traj2 = []
         for i in range(0, min(self.traj_len*self.jump_steps, len(traj1)), self.jump_steps):
             if self.mode == 'state_only':
-                ret_traj1.append(traj1[int(self.pairs1[index][1])+i][0:self.state_dim])
+                ret_traj1.append(traj1[int(self.pairs1[index][1])+i][0:self.agent_num][0:self.state_dim])
             elif self.mode == 'state_pair':
-                ret_traj1.append(np.concatenate([traj1[int(self.pairs1[index][1])+i][0:self.state_dim], traj1[int(self.pairs1[index][1])+i+1][0:self.state_dim]], axis=0))
+                ret_traj1.append(np.concatenate([traj1[int(self.pairs1[index][1])+i][0:self.agent_num][0:self.state_dim], traj1[int(self.pairs1[index][1])+i+1][0:self.agent_num][0:self.state_dim]], axis=0))
             elif self.mode == 'state_action':
                 r_pairs = np.array(traj1[int(self.pairs1[index][1])+i])
                 r_pairs[self.state_dim:] = np.clip(r_pairs[self.state_dim:], self.action_limit[0], self.action_limit[1])
@@ -85,9 +88,9 @@ class RankingLimitDataset(data_utils.Dataset):
 
         for i in range(0, min(self.traj_len*self.jump_steps, len(traj2)), self.jump_steps):
             if self.mode == 'state_only':
-                ret_traj2.append(traj2[int(self.pairs2[index][1])+i][0:self.state_dim])
+                ret_traj2.append(traj2[int(self.pairs2[index][1])+i][0:self.agent_num][0:self.state_dim])
             elif self.mode == 'state_pair':
-                ret_traj2.append(np.concatenate([traj2[int(self.pairs2[index][1])+i][0:self.state_dim], traj2[int(self.pairs2[index][1])+i+1][0:self.state_dim]], axis=0))
+                ret_traj2.append(np.concatenate([traj2[int(self.pairs2[index][1])+i][0:self.agent_num][0:self.state_dim], traj2[int(self.pairs2[index][1])+i+1][0:self.agent_num][0:self.state_dim]], axis=0))
             elif self.mode == 'state_action':
                 r_pairs = np.array(traj2[int(self.pairs2[index][1])+i])
                 r_pairs[self.state_dim:] = np.clip(r_pairs[self.state_dim:], self.action_limit[0], self.action_limit[1])
@@ -116,7 +119,7 @@ class RankingLimitTrajDataset(RankingLimitDataset):
             if self.mode == 'state_only':
                 ret_traj1.append(traj1[i][0:self.state_dim])
             elif self.mode == 'state_pair':
-                ret_traj1.append(np.concatenate([traj1[i][0:self.state_dim], traj1[i+1][0:self.state_dim]], axis=0))
+                ret_traj1.append(np.concatenate([traj1[i][0:self.agent_num][0:self.state_dim], traj1[i+1][0:self.agent_num][0:self.state_dim]], axis=0))
             elif self.mode == 'state_action':
                 ret_traj1.append(traj1[i])
             else:
@@ -127,7 +130,7 @@ class RankingLimitTrajDataset(RankingLimitDataset):
             if self.mode == 'state_only':
                 ret_traj2.append(traj2[i][0:self.state_dim])
             elif self.mode == 'state_pair':
-                ret_traj2.append(np.concatenate([traj2[i][0:self.state_dim], traj2[i+1][0:self.state_dim]], axis=0))
+                ret_traj2.append(np.concatenate([traj2[i][0:self.agent_num][0:self.state_dim], traj2[i+1][0:self.agent_num][0:self.state_dim]], axis=0))
             elif self.mode == 'state_action':
                 ret_traj2.append(traj2[i])
             else:
@@ -147,14 +150,12 @@ def rank_collate_func(items):
     item_list[1] = torch.Tensor(item_list[1]).float()
     item_list[3] = torch.Tensor(item_list[3]).float()
     return item_list
-
 class RankingLimitDataset(data_utils.Dataset):
     def __init__(self, traj_files, pair_nums, state_dim, action_dim, mode='state_only', traj_len=1, seed=1234):
         self.pairs1 = []
         self.pairs2 = []
         self.trajs = []
         self.jump_steps = 1
-
         np.random.seed(seed)
         for i in range(len(traj_files)):
             loaded_data = pickle.load(open(traj_files[i], 'rb'))
@@ -176,7 +177,6 @@ class RankingLimitDataset(data_utils.Dataset):
         np.random.seed(seed)
         self.pairs1 = np.random.permutation(self.pairs1)
         self.pairs2 = np.random.permutation(self.pairs2)
-
     def get_all_pairs(self, trajs, rewards, traj_len):
         all_pairs = []
         for i in range(len(trajs)):
@@ -187,7 +187,6 @@ class RankingLimitDataset(data_utils.Dataset):
             else:
                 all_pairs.append([i,0,np.sum(rewards[i][::self.jump_steps])])
         return all_pairs
-
     def __getitem__(self, index):
         traj1 = self.trajs[int(self.pairs1[index][0])]
         traj2 = self.trajs[int(self.pairs2[index][0])]
@@ -205,7 +204,6 @@ class RankingLimitDataset(data_utils.Dataset):
             else:
                 raise NotImplementedError
         ret_traj1 = np.array(ret_traj1)
-
         for i in range(0, self.traj_len*self.jump_steps, self.jump_steps):
             if self.mode == 'state_only':
                 ret_traj2.append(traj2[int(self.pairs2[index][1])+i][0:self.state_dim])
@@ -216,16 +214,12 @@ class RankingLimitDataset(data_utils.Dataset):
             else:
                 raise NotImplementedError
         ret_traj2 = np.array(ret_traj2)
-
         return torch.from_numpy(ret_traj1), rew1, torch.from_numpy(ret_traj2), rew2
-
     def __len__(self):
         return len(self.pairs1)
-
 class RankingLimitTrajDataset(RankingLimitDataset):
     def __init__(self, traj_files, pair_nums, state_dim, action_dim, mode='state_only', seed=1234):
         super(RankingLimitTrajDataset, self).__init__(traj_files, pair_nums, state_dim, action_dim, mode, -1, seed)
-
     def __getitem__(self, index):
         traj1 = self.trajs[int(self.pairs1[index][0])]
         traj2 = self.trajs[int(self.pairs2[index][0])]
@@ -243,7 +237,6 @@ class RankingLimitTrajDataset(RankingLimitDataset):
             else:
                 raise NotImplementedError
         ret_traj1 = np.array(ret_traj1)
-
         for i in range(0, len(traj2)-1, self.jump_steps):
             if self.mode == 'state_only':
                 ret_traj2.append(traj2[i][0:self.state_dim])
@@ -254,8 +247,5 @@ class RankingLimitTrajDataset(RankingLimitDataset):
             else:
                 raise NotImplementedError
         ret_traj2 = np.array(ret_traj2)
-
         return torch.from_numpy(ret_traj1), rew1, torch.from_numpy(ret_traj2), rew2
-
-
 '''

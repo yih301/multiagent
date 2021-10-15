@@ -3,10 +3,7 @@ import torch.utils.data as data_utils
 import pickle
 import numpy as np
 import os
-from PIL import Image
-
-import torchvision.models as pretrain
-import torchvision.transforms as transforms
+import pdb
 
 def rank_collate_func(items):
     item_list = [[], [], [], []]
@@ -27,6 +24,8 @@ class RankingLimitDataset(data_utils.Dataset):
         self.jump_steps = 1
 
         np.random.seed(seed)
+
+        self.traj_index = 0
         for i in range(len(traj_files)):
             loaded_data = pickle.load(open(traj_files[i], 'rb'))
             self.trajs += loaded_data['traj']
@@ -43,19 +42,22 @@ class RankingLimitDataset(data_utils.Dataset):
         self.mode = mode
         self.state_dim = state_dim
         self.action_dim = action_dim
+        ## different for different envs
+        self.action_limit = [-1., 1.]
         np.random.seed(seed)
         self.pairs1 = np.random.permutation(self.pairs1)
         self.pairs2 = np.random.permutation(self.pairs2)
-        
+        pdb.set_trace()
 
     def get_all_pairs(self, trajs, rewards, traj_len):
         all_pairs = []
         for i in range(len(trajs)):
             if traj_len > 0:
-                for j in range(len(rewards[i])-traj_len*self.jump_steps+1):
-                    all_pairs.append([i,j,np.sum(rewards[i][j:j+traj_len*self.jump_steps:self.jump_steps])])
+                for j in range(max(1, len(rewards[i])-traj_len*self.jump_steps+1)):
+                    all_pairs.append([self.traj_index,j,np.sum(rewards[i][j:j+traj_len*self.jump_steps:self.jump_steps])])
             else:
-                all_pairs.append([i,0,np.sum(rewards[i][::self.jump_steps])])
+                all_pairs.append([self.traj_index,0,np.sum(rewards[i][::self.jump_steps])])
+            self.traj_index += 1
         return all_pairs
 
     def __getitem__(self, index):
@@ -65,24 +67,28 @@ class RankingLimitDataset(data_utils.Dataset):
         rew2 = self.pairs2[index][2]
         ret_traj1 = []
         ret_traj2 = []
-        for i in range(0, self.traj_len*self.jump_steps, self.jump_steps):
+        for i in range(0, min(self.traj_len*self.jump_steps, len(traj1)), self.jump_steps):
             if self.mode == 'state_only':
                 ret_traj1.append(traj1[int(self.pairs1[index][1])+i][0:self.state_dim])
             elif self.mode == 'state_pair':
                 ret_traj1.append(np.concatenate([traj1[int(self.pairs1[index][1])+i][0:self.state_dim], traj1[int(self.pairs1[index][1])+i+1][0:self.state_dim]], axis=0))
             elif self.mode == 'state_action':
-                ret_traj1.append(traj1[int(self.pairs1[index][1])+i])
+                r_pairs = np.array(traj1[int(self.pairs1[index][1])+i])
+                r_pairs[self.state_dim:] = np.clip(r_pairs[self.state_dim:], self.action_limit[0], self.action_limit[1])
+                ret_traj1.append(r_pairs)
             else:
                 raise NotImplementedError
         ret_traj1 = np.array(ret_traj1)
 
-        for i in range(0, self.traj_len*self.jump_steps, self.jump_steps):
+        for i in range(0, min(self.traj_len*self.jump_steps, len(traj2)), self.jump_steps):
             if self.mode == 'state_only':
                 ret_traj2.append(traj2[int(self.pairs2[index][1])+i][0:self.state_dim])
             elif self.mode == 'state_pair':
                 ret_traj2.append(np.concatenate([traj2[int(self.pairs2[index][1])+i][0:self.state_dim], traj2[int(self.pairs2[index][1])+i+1][0:self.state_dim]], axis=0))
             elif self.mode == 'state_action':
-                ret_traj2.append(traj2[int(self.pairs2[index][1])+i])
+                r_pairs = np.array(traj2[int(self.pairs2[index][1])+i])
+                r_pairs[self.state_dim:] = np.clip(r_pairs[self.state_dim:], self.action_limit[0], self.action_limit[1])
+                ret_traj2.append(r_pairs)
             else:
                 raise NotImplementedError
         ret_traj2 = np.array(ret_traj2)
@@ -126,5 +132,3 @@ class RankingLimitTrajDataset(RankingLimitDataset):
         ret_traj2 = np.array(ret_traj2)
 
         return torch.from_numpy(ret_traj1), rew1, torch.from_numpy(ret_traj2), rew2
-
-
