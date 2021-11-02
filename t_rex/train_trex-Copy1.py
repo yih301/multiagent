@@ -45,7 +45,8 @@ parser.add_argument('--num_agent', type=int, default=3, help='the # of agent')
 parser.add_argument('--trajdimension', type=int, default=6, help='the traj dimension')
 parser.add_argument('--actiondimension', type=int, default=2, help='the action dimension')
 parser.add_argument('--output_model_path', help='the output path for models and logs')
-parser.add_argument('--agent', type=int, default=1, help='the running agent')
+parser.add_argument('--agent', type=int, default=1, help='the decreased agent')
+parser.add_argument('--iter', type=int, default=1, help='the running iteration')
 args = parser.parse_args()
 
 if torch.cuda.is_available():
@@ -131,9 +132,10 @@ for epoch in range(args.num_epochs):
             best_acc = np.sum(np.array(acc_counter)/counter)/3
             print("best accuracy:", best_acc)
             if args.network_mode == 'nnnsingle':
-                torch.save(reward_net.state_dict(), 'checkpoints/{}_reward_net_{}_{}_{}_{}_{}_{}.pth'.format(args.env_name, args.mode, args.dataset_mode,args.network_mode,args.agent, '_'.join([str(traj_num) for traj_num in args.train_traj_nums]) if args.train_traj_nums is not None else '', args.seed))
+                torch.save(reward_net.state_dict(), 'checkpoints/{}_reward_net_{}_{}_{}_{}_{}_{}_{}.pth'.format(args.env_name, args.mode, args.dataset_mode,args.network_mode,'agent'+str(args.agent), '_'.join([str(traj_num) for traj_num in args.train_traj_nums]) if args.train_traj_nums is not None else '', args.seed,'iter'+str(args.iter)))
             else:
-                torch.save(reward_net.state_dict(), 'checkpoints/{}_reward_net_{}_{}_{}_{}_{}.pth'.format(args.env_name, args.mode, args.dataset_mode,args.network_mode, '_'.join([str(traj_num) for traj_num in args.train_traj_nums]) if args.train_traj_nums is not None else '', args.seed))
+                torch.save(reward_net.state_dict(), 'checkpoints/{}_reward_net_{}_{}_{}_{}_{}_{}.pth'.format(args.env_name, args.mode, args.dataset_mode,args.network_mode,'agent'+str(args.agent), args.seed,'iter'+str(args.iter)))
+                #torch.save(reward_net.state_dict(), 'checkpoints/{}_reward_net_{}_{}_{}_{}_{}.pth'.format(args.env_name, args.mode, args.dataset_mode,args.network_mode, '_'.join([str(traj_num) for traj_num in args.train_traj_nums]) if args.train_traj_nums is not None else '', args.seed))
 
     for iter_, data in enumerate(train_loader):
         traj1, rew1, traj2, rew2 = data
@@ -160,7 +162,7 @@ for epoch in range(args.num_epochs):
             if iter_ % args.log_interval == 0:
                 print('epoch {}, training loss {}'.format(epoch, loss.item()))
         else:
-            if iter_ < 5:
+            if iter_ < args.iter:
                 loss = 0
                 losslist = []#[0]*args.num_agent
                 reward1 = [reward_net(item) for item in traj1]  #把reward放出来
@@ -181,7 +183,8 @@ for epoch in range(args.num_epochs):
                 losslist = []#[0]*args.num_agent
                 reward1 = [reward_net(item) for item in traj1]  #把reward放出来
                 reward2 = [reward_net(item) for item in traj2]
-                for i in range(args.num_agent-1):
+                pdb.set_trace()
+                for i in range(args.num_agent-1):   
                     pred_rew1 = torch.cat([torch.sum(item[i], dim=0, keepdim=True) for item in reward1], dim=0)
                     pred_rew2 = torch.cat([torch.sum(item[i], dim=0, keepdim=True) for item in reward2], dim=0)
                     reward_sum = torch.cat([pred_rew1, pred_rew2], dim=1)
@@ -195,6 +198,7 @@ for epoch in range(args.num_epochs):
 
 
 '''
+\To change agent: change range in train_trex, and change range in models
 sample call: 
 python ./t_rex/train_trex.py --env-name simple_adversary --train_demo_files ./models/simple_adversary/torchversion/run3/1.pkl --test_demo_files ./models/simple_adversary/torchversion/run8/1.pkl --batch-size 64 --log-interval 100 --save-interval 10 --dataset_mode partial --num_epochs 1000 --batch-size 64 --mode state_only --trajdimension 6 --actiondimension 2 --network_mode single --seed 3
 

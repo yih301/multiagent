@@ -32,26 +32,6 @@ class RewardNet(nn.Module):
             reward = self.net(x)
         return reward.item()   
 
-class RewardNets(nn.Module):
-    def __init__(self, input_dim, net_num, hidden_dim=256, num_layers=4):
-        super(RewardNets, self).__init__()
-        self.reward_nets = nn.ModuleList([RewardNet(input_dim, hidden_dim, num_layers) for i in range(net_num)])
-        self.net_num = net_num
-
-    def forward(self, x_list):
-        if type(x_list) == list and len(x_list) == self.net_num:
-            return [self.reward_nets[i](x_list[i]) for i in range(self.net_num)]
-        else:
-            return [self.reward_nets[i](x_list) for i in range(self.net_num)]
-
-    def compute_reward(self, x):
-        with torch.no_grad():
-            x = torch.Tensor(x).float()
-            if len(x.size()) == 1:
-                x = x.view(1, -1)
-            reward = np.sum([self.reward_nets[i](x).item() for i in range(self.net_num)])
-        return reward
-
 class ShareRewardNet(nn.Module):
     def __init__(self, input_dim, net_num=3, hidden_dim=100, num_sharelayers=2, num_layers=2):
         super(ShareRewardNet, self).__init__()
@@ -80,7 +60,7 @@ class ShareRewardNet(nn.Module):
             return [self.reward_nets[i](x_list[:,i]) for i in range(self.net_num)]
 
         else:
-            return [self.reward_nets[i](x_list) for i in range(self.net_num)]
+            return [self.reward_nets[i](x_list[:,i]) for i in range(self.net_num-1)]
 
 class singleRewardNet(nn.Module):
     def __init__(self, input_dim, net_num=3, hidden_dim=100, num_layers=4):
@@ -106,6 +86,5 @@ class singleRewardNet(nn.Module):
     def forward(self, x_list):
         if len(x_list[0]) == self.net_num:
             return [self.reward_nets[i](x_list[:,i]) for i in range(self.net_num)]
-
         else:
-            return [self.reward_nets[i](x_list) for i in range(self.net_num)]
+            return [self.reward_nets[i](x_list[:,i]) for i in range(self.net_num-1)]  
